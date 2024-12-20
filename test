@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Search</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 30px;
+        }
+
+        /* Search Box Styles */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        #searchInput {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 250px;
+            outline: none;
+        }
+
+        #searchButton {
+            padding: 10px 15px;
+            font-size: 16px;
+            color: white;
+            background-color: #5cb85c;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #searchButton:hover {
+            background-color: #4cae4c;
+        }
+
+        /* Results Container */
+        #results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* User Card Styles */
+        .identity-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 220px;
+            text-align: center;
+            padding: 15px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .identity-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .identity-card img {
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+        }
+
+        .identity-card h3 {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .identity-card p {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Random User Search</h1>
+
+    <div class="search-container">
+        <input id="searchInput" type="text" placeholder="Search users..." />
+        <button id="searchButton">Search</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'https://randomuser.me/api/?results=10';
+
+        async function fetchUsers() {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            const users = data.results;
+            localStorage.setItem('users', JSON.stringify(users)); // Store users in local storage
+            displayUsers(users); // Display users initially
+        }
+
+        // Display users in identity cards
+        function displayUsers(users) {
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = ''; // Clear previous results
+
+            users.forEach(user => {
+                const card = document.createElement('div');
+                card.classList.add('identity-card');
+                card.innerHTML = `
+          <img src="${user.picture.medium}" alt="${user.name.first}">
+          <h3>${user.name.first} ${user.name.last}</h3>
+          <p>Email: ${user.email}</p>
+          <p>Phone: ${user.phone}</p>
+          <p>Location: ${user.location.city}, ${user.location.country}</p>
+        `;
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        // Search users based on input
+        function searchUsers(query) {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const filteredUsers = users.filter(user =>
+                `${user.name.first} ${user.name.last}`.toLowerCase().includes(query.toLowerCase())
+            );
+            displayUsers(filteredUsers); // Display filtered users
+        }
+
+        // Add event listeners for search
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const query = document.getElementById('searchInput').value;
+            searchUsers(query);
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = document.getElementById('searchInput').value;
+                searchUsers(query);
+            }
+        });
+
+        // Initial fetch of users when the page loads
+        fetchUsers();
+    </script>
+
+</body>
+
+</html>
